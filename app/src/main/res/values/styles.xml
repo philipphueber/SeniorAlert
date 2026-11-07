@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Plain, high-contrast platform theme. Black on white, no action bar. -->
+    <style name="AppTheme" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:windowBackground">@android:color/white</item>
+        <item name="android:colorAccent">#1B5E20</item>
+        <item name="android:colorPrimary">#1B5E20</item>
+        <item name="android:statusBarColor">#000000</item>
+    </style>
+
+    <!-- Colours shared by MainActivity and RingActivity. -->
+    <color name="on_green">#1B5E20</color>
+    <color name="off_grey">#757575</color>
+    <color name="stop_red">#B71C1C</color>
+    <color name="text_black">#000000</color>
+    <color name="warn_yellow">#FFF59D</color>
+</resources>

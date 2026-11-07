@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Alarm</string>
+
+    <!-- Main screen -->
+    <string name="title_alarms">Alarms</string>
+    <string name="no_alarms">No alarms yet.</string>
+    <string name="state_on">ON</string>
+    <string name="state_off">OFF</string>
+    <string name="add_alarm">Add alarm</string>
+    <string name="change_time">Change time</string>
+    <string name="delete">Delete</string>
+    <string name="lock">Lock</string>
+    <string name="unlock">Unlock</string>
+    <string name="ringing_banner">Alarm is ringing</string>
+
+    <!-- Dialogs -->
+    <string name="delete_confirm">Delete the alarm at %1$s?</string>
+    <string name="yes_delete">Delete</string>
+    <string name="cancel">Cancel</string>
+    <string name="ok">OK</string>
+    <string name="lock_title">Lock alarms</string>
+    <string name="lock_message">Choose a PIN (4 to 8 digits). When locked, alarms can only be switched on and off. You need the PIN to change them.</string>
+    <string name="pin_hint">PIN</string>
+    <string name="pin_repeat_hint">Repeat PIN</string>
+    <string name="pin_invalid">The PIN must have 4 to 8 digits.</string>
+    <string name="pin_mismatch">The two PINs are not the same.</string>
+    <string name="unlock_title">Unlock</string>
+    <string name="unlock_message">Enter the PIN.</string>
+    <string name="pin_wrong">Wrong PIN.</string>
+
+    <!-- Setup warnings (only shown while unlocked) -->
+    <string name="warn_notifications">Notifications are blocked. The alarm screen cannot appear. Tap to allow.</string>
+    <string name="warn_exact">Exact alarms are not allowed. Alarms may ring late. Tap to allow.</string>
+    <string name="warn_full_screen">Full-screen alarms are not allowed. Tap to allow.</string>
+    <string name="warn_battery">Battery saving may stop alarms. Tap to allow the app to run.</string>
+
+    <!-- Ringing -->
+    <string name="turn_off">Turn off</string>
+    <string name="channel_alarm">Alarm</string>
+    <string name="notif_ringing">Alarm</string>
+    <string name="notif_tap">Tap to turn off</string>
+</resources>
