@@ -199,10 +199,13 @@ public class MainActivity extends Activity {
 
         LinearLayout top = new LinearLayout(this);
         top.setGravity(Gravity.CENTER_VERTICAL);
-        TextView time = text(format(a), 58);
+        TextView time = new OneLineText(this, 58);
+        time.setText(format(a));
         // OFF alarms fade back, so the ones that will ring stand out at a glance.
         time.setTextColor(getColor(a.enabled ? R.color.text_black : R.color.text_muted));
-        top.addView(time, new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1));
+        LinearLayout.LayoutParams timeLp = new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1);
+        timeLp.setMarginEnd(dp(12)); // a shrunk time must not touch ON/OFF
+        top.addView(time, timeLp);
         Button toggle = a.enabled
                 ? filled(getString(R.string.state_on), R.color.on_green, 26, 72)
                 : tinted(getString(R.string.state_off), R.color.off_bg, R.color.off_text, 26, 72);

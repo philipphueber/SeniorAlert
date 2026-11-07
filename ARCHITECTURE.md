@@ -18,6 +18,7 @@ Plain Java, platform APIs only. Keep this file current with every change.
 | `BootReceiver` | On boot, package replace, time or time-zone change and exact-alarm permission change: `Scheduler.rescheduleAll`. |
 | `RingService` | Foreground service (mediaPlayback): sound, vibration, full-screen notification, 2-minute hard cap from the first START (a second alarm joins the ring, it does not extend it), schedules the backup stop (StopReceiver). Sound is the platform's `DEFAULT_ALARM_ALERT_URI` (works before first unlock), ringtone second, a plain tone last. Owns `start`/`stop`/`isRinging`; teardown is total and exception-safe. If `startForeground` fails it shuts down silently rather than ring with no way to stop it. |
 | `RingActivity` | Ringing screen over the lock screen: one big Turn-off button, volume keys also stop. |
+| `OneLineText` | A `TextView` that stays on one line and shrinks its text only as far as needed to fit its width. Used for both clock times, so a very large phone font never wraps a time ("10:30" / "AM"). The platform autosize needs a fixed height; this needs only the width. |
 | `StopReceiver` | Stops ringing: target of the notification action and of the backup AlarmManager stop. |
 | `MainActivity` | Alarm list, add/edit/toggle/delete, PIN set/lock/unlock (Unlock needs a long press; the PIN prompt closes after 10 s without typing), setup warnings, banner with stop while ringing. Opens `RingActivity` itself when ringing starts or it is opened while ringing (the system heads-up would otherwise cover the banner). Warnings that affect whether the ring screen can appear (notifications, ringing channel importance, full-screen) also show when locked. |
 
@@ -56,7 +57,8 @@ so every tap shows feedback. Filled means a main action, tinted means OFF, and
 outlined means a secondary action. The ring screen's button is a clickable
 `FrameLayout` that centres the Material alarm icon (`ic_alarm.xml`, a vector)
 with the label. The clock sits below the button, because the system's heads-up
-notification covers the top of the screen.
+notification covers the top of the screen. Times use `OneLineText`, so the
+largest font setting with 12-hour times still fits one line.
 
 ## Storage
 

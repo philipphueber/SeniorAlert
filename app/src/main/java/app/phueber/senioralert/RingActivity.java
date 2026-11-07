@@ -74,9 +74,8 @@ public final class RingActivity extends Activity {
         root.setPadding(pad, pad, pad, dp(8));
         frame.addView(root);
 
-        clock = new TextView(this);
+        clock = new OneLineText(this, 72);
         clock.setTextColor(Color.WHITE);
-        clock.setTextSize(TypedValue.COMPLEX_UNIT_SP, 72);
         clock.setTypeface(Typeface.DEFAULT_BOLD);
         clock.setGravity(Gravity.CENTER);
 
