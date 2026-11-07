@@ -38,7 +38,7 @@ or grey **OFF** button. Unlocked, each alarm also has **Change time** and
 only the times and the ON/OFF buttons are left, plus a small **Hold to unlock**
 at the very bottom. It only reacts when held down, so it cannot be opened by a
 stray tap. The PIN prompt closes by itself if nothing is typed for 10 seconds.
-A big **Back** button stays at the bottom of the screen and goes to the phone's
+A big **← Back** button stays at the bottom of the screen and goes to the phone's
 home screen, for anyone who does not know the back gesture.
 
 **When an alarm rings.** The phone wakes up, even when it is locked, and shows
@@ -142,7 +142,7 @@ Knopf **AN** oder grauer Knopf **AUS**. Entsperrt hat jeder Wecker zusätzlich
 ein kleines **Zum Entsperren gedrückt halten**. Es reagiert nur, wenn man es
 gedrückt hält, also nicht auf versehentliches Antippen. Die PIN-Abfrage
 schließt sich von selbst, wenn 10 Sekunden lang nichts eingegeben wird.
-Ganz unten bleibt immer ein großer Knopf **Zurück**. Er führt zum
+Ganz unten bleibt immer ein großer Knopf **← Zurück**. Er führt zum
 Startbildschirm des Telefons, für alle, die die Zurück-Geste nicht kennen.
 
 **Wenn ein Wecker klingelt.** Das Telefon wacht auf, auch wenn es gesperrt

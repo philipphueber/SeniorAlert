@@ -30,6 +30,7 @@ import android.view.Gravity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
@@ -94,13 +95,44 @@ public class MainActivity extends Activity {
 
         // Back is pinned below the list, always in view: many seniors do not know
         // the system back gesture. It leaves the app for the home screen.
-        Button back = outlined(getString(R.string.back), R.color.text_black, 22, 64);
-        back.setOnClickListener(v -> goHome());
+        View back = backButton();
         LinearLayout.LayoutParams blp = new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
         blp.setMargins(p, dp(8), p, dp(12));
         page.addView(back, blp);
         setContentView(page);
+    }
+
+    /**
+     * Outlined like Lock, with a left arrow just before the word. A Button would pin
+     * its icon to the far left edge, so arrow and label are grouped in the centre.
+     */
+    private View backButton() {
+        int fg = getColor(R.color.text_black);
+        LinearLayout b = new LinearLayout(this);
+        b.setGravity(Gravity.CENTER);
+        b.setMinimumHeight(dp(64));
+        b.setPadding(dp(16), dp(8), dp(16), dp(8));
+        b.setBackground(ripple(R.color.press_dark, getColor(R.color.card), fg, 32));
+        b.setClickable(true);
+        b.setFocusable(true);
+        b.setContentDescription(getString(R.string.back));
+        b.setOnClickListener(v -> goHome());
+
+        TextView label = text(getString(R.string.back), 22);
+        label.setTypeface(Typeface.DEFAULT_BOLD);
+        label.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
+
+        ImageView arrow = new ImageView(this);
+        arrow.setImageResource(R.drawable.ic_arrow_back);
+        arrow.setImageTintList(ColorStateList.valueOf(fg));
+        arrow.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
+        int size = Math.round(label.getTextSize() * 1.2f); // grows with the font setting
+        LinearLayout.LayoutParams alp = new LinearLayout.LayoutParams(size, size);
+        alp.setMarginEnd(dp(10));
+        b.addView(arrow, alp);
+        b.addView(label);
+        return b;
     }
 
     private void goHome() {
