@@ -26,6 +26,12 @@ internet, no ads.
 
 ## What you see
 
+<p>
+  <img src="docs/screenshots/main-locked.png" width="30%" alt="Main screen, locked: alarm times with big ON and OFF buttons">
+  <img src="docs/screenshots/main-unlocked.png" width="30%" alt="Main screen, unlocked: each alarm also has Change time and Delete">
+  <img src="docs/screenshots/ringing.png" width="30%" alt="Ringing over the lock screen: one huge red Turn off button and the time">
+</p>
+
 **Main screen.** A list of alarm times. Next to each time, a big green **ON**
 or grey **OFF** button. Unlocked, each alarm also has **Change time** and
 **Delete**, and at the bottom there are **Add alarm** and **Lock**. Locked,
@@ -122,6 +128,9 @@ Mehr kann die App absichtlich nicht. Keine weiteren Seiten, keine
 Einstellungen, kein Konto, kein Internet, keine Werbung.
 
 ## Was man sieht
+
+Bilder siehe [oben](#what-you-see) (englische Ansicht; auf einem deutschen
+Telefon steht dort AN, AUS, Ausschalten).
 
 **Hauptseite.** Eine Liste mit Weckzeiten. Neben jeder Zeit ein großer grüner
 Knopf **AN** oder grauer Knopf **AUS**. Entsperrt hat jeder Wecker zusätzlich
