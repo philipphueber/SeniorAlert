@@ -35,8 +35,9 @@ internet, no ads.
 **Main screen.** A list of alarm times. Next to each time, a big green **ON**
 or grey **OFF** button. Unlocked, each alarm also has **Change time** and
 **Delete**, and at the bottom there are **Add alarm** and **Lock**. Locked,
-only the times and the ON/OFF buttons are left, plus a small **Unlock** at the
-very bottom.
+only the times and the ON/OFF buttons are left, plus a small **Hold to unlock**
+at the very bottom. It only reacts when held down, so it cannot be opened by a
+stray tap. The PIN prompt closes by itself if nothing is typed for 10 seconds.
 
 **When an alarm rings.** The phone wakes up, even when it is locked, and shows
 the current time and one huge red **Turn off** button.
@@ -136,7 +137,9 @@ Telefon steht dort AN, AUS, Ausschalten).
 Knopf **AN** oder grauer Knopf **AUS**. Entsperrt hat jeder Wecker zusätzlich
 **Zeit ändern** und **Löschen**, unten stehen **Wecker hinzufügen** und
 **Sperren**. Gesperrt bleiben nur die Zeiten und die AN/AUS-Knöpfe, ganz unten
-ein kleines **Entsperren**.
+ein kleines **Zum Entsperren gedrückt halten**. Es reagiert nur, wenn man es
+gedrückt hält, also nicht auf versehentliches Antippen. Die PIN-Abfrage
+schließt sich von selbst, wenn 10 Sekunden lang nichts eingegeben wird.
 
 **Wenn ein Wecker klingelt.** Das Telefon wacht auf, auch wenn es gesperrt
 ist, und zeigt die Uhrzeit und einen riesigen roten Knopf **Ausschalten**.

@@ -21,7 +21,9 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.PowerManager;
 import android.provider.Settings;
+import android.text.Editable;
 import android.text.InputType;
+import android.text.TextWatcher;
 import android.text.format.DateFormat;
 import android.util.TypedValue;
 import android.view.Gravity;
@@ -43,6 +45,7 @@ import java.util.List;
 public class MainActivity extends Activity {
     private static final int REQ_NOTIF = 1;
     private static final String PREF_NOTIF_ASKED = "notif_asked";
+    private static final long UNLOCK_IDLE_MS = 10_000L; // PIN prompt closes after 10 s without typing
 
     private final Handler handler = new Handler(Looper.getMainLooper());
     private Store store;
@@ -167,7 +170,9 @@ public class MainActivity extends Activity {
                     LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
             lp.topMargin = dp(40);
             lp.gravity = Gravity.CENTER_HORIZONTAL;
-            unlock.setOnClickListener(v -> showUnlock());
+            // Long press only: a senior tapping around cannot open the PIN prompt by
+            // accident; the helper, told by the label, holds it.
+            unlock.setOnLongClickListener(v -> { showUnlock(); return true; });
             root.addView(unlock, lp);
         } else {
             Button add = filled(getString(R.string.add_alarm), R.color.on_green, 26, 80);
@@ -371,6 +376,22 @@ public class MainActivity extends Activity {
                 .setNegativeButton(R.string.cancel, null)
                 .show();
         dialog = d;
+
+        // If nobody types for UNLOCK_IDLE_MS, close the prompt and go back to the
+        // locked list, so a PIN prompt opened by accident never lingers. Each digit
+        // restarts the countdown, so a slow helper is not cut off mid-PIN.
+        Runnable autoClose = d::dismiss;
+        handler.postDelayed(autoClose, UNLOCK_IDLE_MS);
+        pin.addTextChangedListener(new TextWatcher() {
+            @Override public void beforeTextChanged(CharSequence s, int a, int b, int c) { }
+            @Override public void onTextChanged(CharSequence s, int a, int b, int c) { }
+            @Override public void afterTextChanged(Editable s) {
+                handler.removeCallbacks(autoClose);
+                handler.postDelayed(autoClose, UNLOCK_IDLE_MS);
+            }
+        });
+        d.setOnDismissListener(x -> handler.removeCallbacks(autoClose));
+
         // Overridden after show() so a wrong PIN keeps the dialog open.
         d.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(v -> {
             if (store.unlock(pin.getText().toString())) {

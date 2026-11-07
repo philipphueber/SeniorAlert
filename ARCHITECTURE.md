@@ -19,7 +19,7 @@ Plain Java, platform APIs only. Keep this file current with every change.
 | `RingService` | Foreground service (mediaPlayback): sound, vibration, full-screen notification, 2-minute hard cap from the first START (a second alarm joins the ring, it does not extend it), schedules the backup stop (StopReceiver). Sound is the platform's `DEFAULT_ALARM_ALERT_URI` (works before first unlock), ringtone second, a plain tone last. Owns `start`/`stop`/`isRinging`; teardown is total and exception-safe. If `startForeground` fails it shuts down silently rather than ring with no way to stop it. |
 | `RingActivity` | Ringing screen over the lock screen: one big Turn-off button, volume keys also stop. |
 | `StopReceiver` | Stops ringing: target of the notification action and of the backup AlarmManager stop. |
-| `MainActivity` | Alarm list, add/edit/toggle/delete, PIN set/lock/unlock, setup warnings, banner with stop while ringing. Opens `RingActivity` itself when ringing starts or it is opened while ringing (the system heads-up would otherwise cover the banner). Warnings that affect whether the ring screen can appear (notifications, ringing channel importance, full-screen) also show when locked. |
+| `MainActivity` | Alarm list, add/edit/toggle/delete, PIN set/lock/unlock (Unlock needs a long press; the PIN prompt closes after 10 s without typing), setup warnings, banner with stop while ringing. Opens `RingActivity` itself when ringing starts or it is opened while ringing (the system heads-up would otherwise cover the banner). Warnings that affect whether the ring screen can appear (notifications, ringing channel importance, full-screen) also show when locked. |
 
 Pure classes have JVM tests in `app/src/test`; Android-facing classes have none.
 

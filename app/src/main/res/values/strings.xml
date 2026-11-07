@@ -11,7 +11,7 @@
     <string name="change_time">Change time</string>
     <string name="delete">Delete</string>
     <string name="lock">Lock</string>
-    <string name="unlock">Unlock</string>
+    <string name="unlock">Hold to unlock</string>
     <string name="ringing_banner">Alarm is ringing</string>
 
     <!-- Dialogs -->

@@ -11,7 +11,7 @@
     <string name="change_time">Zeit ändern</string>
     <string name="delete">Löschen</string>
     <string name="lock">Sperren</string>
-    <string name="unlock">Entsperren</string>
+    <string name="unlock">Zum Entsperren gedrückt halten</string>
     <string name="ringing_banner">Wecker klingelt</string>
 
     <!-- Dialoge -->

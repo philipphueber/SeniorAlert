@@ -20,7 +20,8 @@ together is in [ARCHITECTURE.md](ARCHITECTURE.md).
 - **English and German.** Every user-visible string goes in both
   `res/values/strings.xml` and `res/values-de/strings.xml` (formal "Sie").
 - **Big and plain.** Large text, large touch targets, high contrast, no
-  gestures, no long-press, no swipe.
+  gestures, no swipe, and no long-press, with one deliberate exception: Unlock
+  needs a long press, so a senior cannot open the PIN prompt by accident.
 
 ## Building
 
