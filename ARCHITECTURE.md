@@ -20,7 +20,7 @@ Plain Java, platform APIs only. Keep this file current with every change.
 | `RingActivity` | Ringing screen over the lock screen: one big Turn-off button, volume keys also stop. |
 | `OneLineText` | A `TextView` that stays on one line and shrinks its text only as far as needed to fit its width. Used for both clock times, so a very large phone font never wraps a time ("10:30" / "AM"). The platform autosize needs a fixed height; this needs only the width. |
 | `StopReceiver` | Stops ringing: target of the notification action and of the backup AlarmManager stop. |
-| `MainActivity` | Alarm list, add/edit/toggle/delete, PIN set/lock/unlock (Unlock needs a long press; the PIN prompt closes after 10 s without typing), setup warnings, banner with stop while ringing. Opens `RingActivity` itself when ringing starts or it is opened while ringing (the system heads-up would otherwise cover the banner). Warnings that affect whether the ring screen can appear (notifications, ringing channel importance, full-screen) also show when locked. |
+| `MainActivity` | Alarm list, add/edit/toggle/delete, PIN set/lock/unlock (Unlock needs a long press; the PIN prompt closes after 10 s without typing), setup warnings, banner with stop while ringing, and a Back button pinned below the scrolling list that opens the home screen (`CATEGORY_HOME`), because many seniors do not know the back gesture. Opens `RingActivity` itself when ringing starts or it is opened while ringing (the system heads-up would otherwise cover the banner). Warnings that affect whether the ring screen can appear (notifications, ringing channel importance, full-screen) also show when locked. |
 
 Pure classes have JVM tests in `app/src/test`; Android-facing classes have none.
 

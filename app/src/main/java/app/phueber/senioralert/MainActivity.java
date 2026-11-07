@@ -77,18 +77,41 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         store = new Store(this);
+        LinearLayout page = new LinearLayout(this);
+        page.setOrientation(LinearLayout.VERTICAL);
+        // Keeps content clear of the status bar and the gesture bar; Android 15 draws
+        // every app edge to edge, so without this Back sits under the gesture bar.
+        page.setFitsSystemWindows(true);
         ScrollView scroll = new ScrollView(this);
         scroll.setFillViewport(true);
-        // Keeps content clear of the status bar and the gesture bar; Android 15 draws
-        // every app edge to edge, so without this the last button sits under the bar.
-        scroll.setFitsSystemWindows(true);
-        scroll.setClipToPadding(false);
         root = new LinearLayout(this);
         root.setOrientation(LinearLayout.VERTICAL);
         int p = dp(20);
         root.setPadding(p, dp(12), p, dp(28));
         scroll.addView(root);
-        setContentView(scroll);
+        page.addView(scroll, new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, 0, 1));
+
+        // Back is pinned below the list, always in view: many seniors do not know
+        // the system back gesture. It leaves the app for the home screen.
+        Button back = outlined(getString(R.string.back), R.color.text_black, 22, 64);
+        back.setOnClickListener(v -> goHome());
+        LinearLayout.LayoutParams blp = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+        blp.setMargins(p, dp(8), p, dp(12));
+        page.addView(back, blp);
+        setContentView(page);
+    }
+
+    private void goHome() {
+        Intent home = new Intent(Intent.ACTION_MAIN)
+                .addCategory(Intent.CATEGORY_HOME)
+                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        try {
+            startActivity(home);
+        } catch (RuntimeException e) {
+            moveTaskToBack(true);
+        }
     }
 
     @Override
