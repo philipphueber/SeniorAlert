@@ -60,17 +60,40 @@ public final class Scheduler {
         ctx.getSystemService(AlarmManager.class).cancel(fireIntent(ctx, id));
     }
 
-    /** Re-arms every enabled alarm (boot, time change, app update, permission change). */
+    /**
+     * Re-arms every enabled alarm from scratch. For boot, time or time-zone change,
+     * app update and permission change, where the old trigger time is gone or wrong.
+     */
     public static void rescheduleAll(Context ctx) {
         for (Alarm a : new Store(ctx).alarms()) apply(ctx, a);
     }
 
+    /**
+     * Arms only enabled alarms that AlarmManager no longer holds (e.g. after a
+     * force-stop), leaving pending ones untouched. Used when the app opens: re-arming
+     * a pending alarm would recompute its time, and an inexact fallback alarm that is
+     * a few minutes late would then be pushed to tomorrow and silently skipped today.
+     */
+    public static void ensureArmed(Context ctx) {
+        for (Alarm a : new Store(ctx).alarms()) {
+            if (a.enabled && existingFireIntent(ctx, a.id) == null) schedule(ctx, a);
+        }
+    }
+
+    private static PendingIntent existingFireIntent(Context ctx, int id) {
+        return PendingIntent.getBroadcast(ctx, id, fireIntentBase(ctx, id),
+                PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_NO_CREATE);
+    }
+
     private static PendingIntent fireIntent(Context ctx, int id) {
-        Intent i = new Intent(ctx, AlarmReceiver.class)
+        return PendingIntent.getBroadcast(ctx, id, fireIntentBase(ctx, id),
+                PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT);
+    }
+
+    private static Intent fireIntentBase(Context ctx, int id) {
+        return new Intent(ctx, AlarmReceiver.class)
                 .setAction(ACTION_FIRE)
                 .setData(Uri.parse("senioralert://alarm/" + id)) // unique per alarm
                 .putExtra(EXTRA_ALARM_ID, id);
-        return PendingIntent.getBroadcast(ctx, id, i,
-                PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT);
     }
 }

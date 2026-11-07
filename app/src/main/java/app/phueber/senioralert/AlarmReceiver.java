@@ -29,9 +29,17 @@ public final class AlarmReceiver extends BroadcastReceiver {
         try {
             RingService.start(ctx, id);
         } catch (RuntimeException e) {
-            // e.g. ForegroundServiceStartNotAllowedException. Nothing is playing then,
-            // so there is nothing that would need switching off.
+            // e.g. ForegroundServiceStartNotAllowedException. Nothing is playing, so the
+            // stop invariant is untouched, but the alarm did not ring. Do not let it look
+            // as if it had: put it back ON (armed for its next occurrence), so the list
+            // stays truthful instead of silently showing OFF.
             Log.e(TAG, "could not start ringing", e);
+            try {
+                store.update(a);
+                Scheduler.schedule(ctx, a);
+            } catch (RuntimeException e2) {
+                Log.e(TAG, "could not re-arm", e2);
+            }
         }
     }
 }

@@ -13,7 +13,6 @@ import android.graphics.drawable.Icon;
 import android.media.AudioAttributes;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
-import android.media.RingtoneManager;
 import android.media.ToneGenerator;
 import android.net.Uri;
 import android.os.Build;
@@ -35,11 +34,13 @@ import android.util.Log;
  *   - RingActivity's huge button and the volume keys,
  *   - the notification's "Turn off" action (broadcast to StopReceiver),
  *   - MainActivity's banner (stop()),
- *   - a main-looper timeout exactly RING_MS after the latest START,
+ *   - a main-looper timeout exactly RING_MS after ringing STARTED (a hard cap: a
+ *     second alarm firing meanwhile does not extend it),
  *   - a backup AlarmManager alarm at RING_MS + 10 s (StopReceiver), in case the
- *     main looper is stuck or the handler message is lost,
- *   - the wake lock's own timeout, and process death (MediaPlayer and Vibrator die
- *     with the process).
+ *     handler message is lost (e.g. the service object was replaced),
+ *   - process death: MediaPlayer and Vibrator die with the process (a stuck main
+ *     thread ends in an ANR kill, which also stops the sound).
+ * The wake lock's own timeout is NOT a stop path; it only bounds the CPU hold.
  * All state lives on the main thread; every entry point that may come from
  * elsewhere hops to it.
  */
@@ -175,20 +176,19 @@ public final class RingService extends Service {
             acquireWakeLock();
             startSound();
             startVibration();
-        } else {
-            // A second alarm while ringing: keep the one sound, restart the window.
-            acquireWakeLock();
+            // The 2-minute limit is a hard cap from the first START. A second alarm
+            // firing while ringing joins the current ring; it does not extend it.
+            handler.removeCallbacks(timeout);
+            handler.postDelayed(timeout, RING_MS);
+            armBackupStop();
         }
-        handler.removeCallbacks(timeout);
-        handler.postDelayed(timeout, RING_MS);
-        armBackupStop();
         launchScreenIfNotificationCannot();
     }
 
     @Override
     public void onDestroy() {
         teardown();
-        instance = null;
+        if (instance == this) instance = null;
         super.onDestroy();
     }
 
@@ -248,15 +248,16 @@ public final class RingService extends Service {
             .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
             .build();
 
+    /**
+     * The phone's own alarm sound. DEFAULT_ALARM_ALERT_URI is the platform's
+     * indirection to whatever the user picked, and MediaPlayer resolves it through
+     * the copy Android caches in device-protected storage, so it also plays before
+     * the first unlock after a reboot. The ringtone is the second choice; the tone
+     * is the last resort, e.g. when the user set the alarm sound to "None".
+     */
     private void startSound() {
-        Uri[] candidates = {
-                RingtoneManager.getActualDefaultRingtoneUri(this, RingtoneManager.TYPE_ALARM),
-                RingtoneManager.getActualDefaultRingtoneUri(this, RingtoneManager.TYPE_RINGTONE),
-                RingtoneManager.getActualDefaultRingtoneUri(this, RingtoneManager.TYPE_NOTIFICATION),
-                Settings.System.DEFAULT_ALARM_ALERT_URI,
-        };
+        Uri[] candidates = { Settings.System.DEFAULT_ALARM_ALERT_URI, Settings.System.DEFAULT_RINGTONE_URI };
         for (Uri uri : candidates) {
-            if (uri == null) continue;
             MediaPlayer p = new MediaPlayer();
             try {
                 p.setAudioAttributes(ALARM_AUDIO);
@@ -341,16 +342,39 @@ public final class RingService extends Service {
 
     // ---- Notification ----------------------------------------------------
 
-    private Notification buildNotification() {
-        NotificationManager nm = getSystemService(NotificationManager.class);
+    /** Creates the ringing channel; idempotent (the user's later changes to it are kept). */
+    static void ensureChannel(Context ctx) {
         NotificationChannel ch = new NotificationChannel(CHANNEL,
-                getString(R.string.channel_alarm), NotificationManager.IMPORTANCE_HIGH);
+                ctx.getString(R.string.channel_alarm), NotificationManager.IMPORTANCE_HIGH);
         // The service plays sound and vibration itself (and stops them); the channel
         // must not add a second copy it cannot stop.
         ch.setSound(null, null);
         ch.enableVibration(false);
         ch.setLockscreenVisibility(Notification.VISIBILITY_PUBLIC);
-        nm.createNotificationChannel(ch);
+        ctx.getSystemService(NotificationManager.class).createNotificationChannel(ch);
+    }
+
+    /**
+     * Whether the ring screen and the notification's Turn-off button can appear on
+     * their own. False if notifications are off, the ringing channel was turned
+     * down below "high" (silent/minimised/off) by the user, or (Android 14+) full-
+     * screen notifications are denied. MainActivity warns about it, even locked.
+     */
+    static boolean ringScreenCanAppear(Context ctx) {
+        try {
+            ensureChannel(ctx);
+            NotificationManager nm = ctx.getSystemService(NotificationManager.class);
+            if (!nm.areNotificationsEnabled()) return false;
+            NotificationChannel ch = nm.getNotificationChannel(CHANNEL);
+            if (ch != null && ch.getImportance() < NotificationManager.IMPORTANCE_HIGH) return false;
+            return Build.VERSION.SDK_INT < 34 || nm.canUseFullScreenIntent();
+        } catch (RuntimeException e) {
+            return false;
+        }
+    }
+
+    private Notification buildNotification() {
+        ensureChannel(this);
 
         PendingIntent screen = PendingIntent.getActivity(this, RC_ACTIVITY,
                 new Intent(this, RingActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
@@ -392,10 +416,7 @@ public final class RingService extends Service {
      */
     private void launchScreenIfNotificationCannot() {
         try {
-            NotificationManager nm = getSystemService(NotificationManager.class);
-            boolean blocked = !nm.areNotificationsEnabled()
-                    || (Build.VERSION.SDK_INT >= 34 && !nm.canUseFullScreenIntent());
-            if (blocked) {
+            if (!ringScreenCanAppear(this)) {
                 startActivity(new Intent(this, RingActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
             }
         } catch (RuntimeException e) {

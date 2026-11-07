@@ -55,7 +55,13 @@ public class MainActivity extends Activity {
         @Override public void run() {
             boolean ringing = RingService.isRinging();
             // A dialog would cover the stop banner; ringing must always be stoppable.
-            if (ringing && !shownRinging) dismissDialog();
+            // Checked on every tick, so a dialog opened during ringing closes too.
+            if (ringing) dismissDialog();
+            // When ringing starts while this screen is open, show the ring screen
+            // (we are in the foreground, so Android allows it). The system's heads-up
+            // notification would otherwise cover the banner at the top, and a tap
+            // meant for the banner would land on the notification instead.
+            if (ringing && !shownRinging) openRingScreen();
             if (ringing != shownRinging
                     || !AlarmCodec.encode(store.alarms()).equals(shownAlarms)) rebuild();
             handler.postDelayed(this, 1000);
@@ -80,10 +86,13 @@ public class MainActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
-        // Cheap and self-healing: alarms are lost e.g. after a force-stop.
-        Scheduler.rescheduleAll(this);
+        // Self-healing: alarms are lost e.g. after a force-stop. Only arms what is
+        // missing, so a pending (possibly late, inexact) alarm keeps its time.
+        Scheduler.ensureArmed(this);
         maybeAutoRequestNotifications();
         rebuild();
+        // Opened (or returned to) while ringing: the ring screen goes on top.
+        if (RingService.isRinging()) openRingScreen();
         handler.postDelayed(poll, 1000);
     }
 
@@ -118,7 +127,7 @@ public class MainActivity extends Activity {
             root.addView(stop, spaced());
         }
 
-        if (!locked) addWarnings();
+        addWarnings(locked);
 
         TextView title = text(getString(R.string.title_alarms), 34);
         title.setTypeface(Typeface.DEFAULT_BOLD);
@@ -196,21 +205,30 @@ public class MainActivity extends Activity {
 
     // ---------------------------------------------------------------- warnings
 
-    private void addWarnings() {
+    /**
+     * Setup problems, for the helper. Locked, only the ones that would stop the ring
+     * screen and its Turn-off button from appearing are shown: those affect whether a
+     * ringing alarm can be switched off, so they must not hide behind the PIN.
+     */
+    private void addWarnings(boolean locked) {
         String pkg = getPackageName();
         Uri pkgUri = Uri.parse("package:" + pkg);
         NotificationManager nm = getSystemService(NotificationManager.class);
 
-        if (!notificationsAllowed()) {
+        boolean fullScreenDenied = Build.VERSION.SDK_INT >= 34 && !nm.canUseFullScreenIntent();
+        if (!notificationsAllowed() || (!fullScreenDenied && !RingService.ringScreenCanAppear(this))) {
+            // Also covers the ringing channel turned down to silent/off in system settings.
             warning(R.string.warn_notifications, v -> fixNotifications());
         }
+        if (fullScreenDenied) {
+            warning(R.string.warn_full_screen, v -> open(new Intent(
+                    Settings.ACTION_MANAGE_APP_USE_FULL_SCREEN_INTENT, pkgUri), null));
+        }
+        if (locked) return;
+
         if (!Scheduler.canScheduleExact(this) && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             warning(R.string.warn_exact, v -> open(new Intent(
                     Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM, pkgUri), null));
-        }
-        if (Build.VERSION.SDK_INT >= 34 && !nm.canUseFullScreenIntent()) {
-            warning(R.string.warn_full_screen, v -> open(new Intent(
-                    Settings.ACTION_MANAGE_APP_USE_FULL_SCREEN_INTENT, pkgUri), null));
         }
         if (!getSystemService(PowerManager.class).isIgnoringBatteryOptimizations(pkg)) {
             warning(R.string.warn_battery, v -> open(
@@ -359,6 +377,14 @@ public class MainActivity extends Activity {
                 rebuild();
             }
         });
+    }
+
+    private void openRingScreen() {
+        try {
+            startActivity(new Intent(this, RingActivity.class));
+        } catch (RuntimeException e) {
+            // The banner below stays as the way to stop.
+        }
     }
 
     private void dismissDialog() {

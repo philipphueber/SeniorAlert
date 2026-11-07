@@ -13,13 +13,13 @@ Plain Java, platform APIs only. Keep this file current with every change.
 | `NextTrigger` | Next fire time for hour:minute in a given `TimeZone`, via `Calendar`, so 07:00 stays 07:00 across DST. Used when an alarm is switched ON: the next occurrence of its time; "now" (same minute) means tomorrow. Pure. |
 | `Pin` | PIN validation (4-8 ASCII digits), salted SHA-256 hash, constant-time compare. Pure. |
 | `Store` | All persistent state (alarms, next id, lock flag, PIN salt/hash) in device-protected SharedPreferences. |
-| `Scheduler` | Arms/cancels one `AlarmManager.setAlarmClock` per enabled alarm; `rescheduleAll` re-arms everything. |
-| `AlarmReceiver` | Receives a fired alarm: marks it OFF in `Store` first (alarms do not repeat), then starts `RingService`. |
+| `Scheduler` | Arms/cancels one `AlarmManager.setAlarmClock` per enabled alarm (inexact `setAndAllowWhileIdle` only if exact alarms are denied). `rescheduleAll` re-arms everything from scratch (boot, time change); `ensureArmed` arms only what AlarmManager lost (app opened), so a pending, possibly late alarm is never pushed to tomorrow. |
+| `AlarmReceiver` | Receives a fired alarm: marks it OFF in `Store` first (alarms do not repeat), then starts `RingService`. If Android refuses the start, it puts the alarm back ON (armed for the next occurrence) so a missed ring never shows as OFF. |
 | `BootReceiver` | On boot, package replace, time or time-zone change and exact-alarm permission change: `Scheduler.rescheduleAll`. |
-| `RingService` | Foreground service (mediaPlayback): sound, vibration, full-screen notification, 2-minute timer, schedules the backup stop (StopReceiver). Owns `start`/`stop`/`isRinging`; teardown is total and exception-safe. If `startForeground` fails it shuts down silently rather than ring with no way to stop it. |
+| `RingService` | Foreground service (mediaPlayback): sound, vibration, full-screen notification, 2-minute hard cap from the first START (a second alarm joins the ring, it does not extend it), schedules the backup stop (StopReceiver). Sound is the platform's `DEFAULT_ALARM_ALERT_URI` (works before first unlock), ringtone second, a plain tone last. Owns `start`/`stop`/`isRinging`; teardown is total and exception-safe. If `startForeground` fails it shuts down silently rather than ring with no way to stop it. |
 | `RingActivity` | Ringing screen over the lock screen: one big Turn-off button, volume keys also stop. |
 | `StopReceiver` | Stops ringing: target of the notification action and of the backup AlarmManager stop. |
-| `MainActivity` | Alarm list, add/edit/toggle/delete, PIN set/lock/unlock, permission hints, banner with stop while ringing. |
+| `MainActivity` | Alarm list, add/edit/toggle/delete, PIN set/lock/unlock, setup warnings, banner with stop while ringing. Opens `RingActivity` itself when ringing starts or it is opened while ringing (the system heads-up would otherwise cover the banner). Warnings that affect whether the ring screen can appear (notifications, ringing channel importance, full-screen) also show when locked. |
 
 Pure classes have JVM tests in `app/src/test`; Android-facing classes have none.
 
@@ -39,6 +39,11 @@ places: the big button, the volume keys, the notification action, the banner in
 broadcast to `StopReceiver` that does not depend on the service's own timer).
 All paths end in the same stop routine. Do not add any step (PIN, confirmation)
 to any of them.
+
+The visible paths depend on the notification. If notifications, the ringing
+channel or full-screen intents are turned off, the sound still plays but only
+the banner (after unlocking the phone) and the time limit remain. That is why
+those settings are warned about even when the app is locked.
 
 ## Storage
 
