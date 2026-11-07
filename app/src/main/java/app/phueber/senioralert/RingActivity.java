@@ -1,8 +1,12 @@
 package app.phueber.senioralert;
 
 import android.app.Activity;
+import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.graphics.Typeface;
+import android.widget.FrameLayout;
+import android.graphics.drawable.GradientDrawable;
+import android.graphics.drawable.RippleDrawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -12,7 +16,7 @@ import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.WindowManager;
-import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -58,11 +62,17 @@ public final class RingActivity extends Activity {
         }
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
+        // All red (RingTheme), one huge white button with red text: unmistakably the
+        // thing to press, and high contrast either way.
+        // The outer frame takes the system-bar insets (fitsSystemWindows replaces its
+        // padding), the inner column keeps our own margins.
+        FrameLayout frame = new FrameLayout(this);
+        frame.setFitsSystemWindows(true); // clear of status and gesture bars
         LinearLayout root = new LinearLayout(this);
         root.setOrientation(LinearLayout.VERTICAL);
-        root.setBackgroundColor(Color.BLACK);
-        int pad = dp(16);
-        root.setPadding(pad, pad, pad, pad);
+        int pad = dp(20);
+        root.setPadding(pad, pad, pad, dp(8));
+        frame.addView(root);
 
         clock = new TextView(this);
         clock.setTextColor(Color.WHITE);
@@ -70,17 +80,44 @@ public final class RingActivity extends Activity {
         clock.setTypeface(Typeface.DEFAULT_BOLD);
         clock.setGravity(Gravity.CENTER);
 
-        Button off = new Button(this);
-        off.setText(R.string.turn_off);
-        off.setAllCaps(false);
-        off.setTextColor(Color.WHITE);
-        off.setTextSize(TypedValue.COMPLEX_UNIT_SP, 40);
-        off.setTypeface(Typeface.DEFAULT_BOLD);
-        off.setBackgroundColor(getColor(R.color.stop_red));
+        // The button: a white rounded panel, clickable as a whole, with the alarm icon
+        // and the label grouped in its centre (a Button would pin the icon to its top).
+        int red = getColor(R.color.stop_red);
+        FrameLayout off = new FrameLayout(this);
+        GradientDrawable shape = new GradientDrawable();
+        shape.setColor(Color.WHITE);
+        shape.setCornerRadius(dp(36));
+        GradientDrawable mask = new GradientDrawable();
+        mask.setColor(Color.WHITE);
+        mask.setCornerRadius(dp(36));
+        off.setBackground(new RippleDrawable(ColorStateList.valueOf(0x33C62828), shape, mask));
+        off.setClickable(true);
+        off.setFocusable(true);
+        off.setContentDescription(getString(R.string.turn_off));
         off.setOnClickListener(v -> turnOff());
+
+        LinearLayout content = new LinearLayout(this);
+        content.setOrientation(LinearLayout.VERTICAL);
+        content.setGravity(Gravity.CENTER_HORIZONTAL);
+        ImageView bell = new ImageView(this);
+        bell.setImageResource(R.drawable.ic_alarm);
+        bell.setImageTintList(ColorStateList.valueOf(red));
+        content.addView(bell, new LinearLayout.LayoutParams(dp(112), dp(112)));
+        TextView label = new TextView(this);
+        label.setText(R.string.turn_off);
+        label.setTextColor(red);
+        label.setTextSize(TypedValue.COMPLEX_UNIT_SP, 48);
+        label.setTypeface(Typeface.DEFAULT_BOLD);
+        label.setGravity(Gravity.CENTER);
+        LinearLayout.LayoutParams llp = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+        llp.topMargin = dp(12);
+        content.addView(label, llp);
+        off.addView(content, new FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.WRAP_CONTENT, FrameLayout.LayoutParams.WRAP_CONTENT, Gravity.CENTER));
         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT, 0, 1f); // fills the rest of the screen
-        lp.bottomMargin = pad;
+        lp.bottomMargin = dp(12);
         root.addView(off, lp);
 
         // The clock goes at the bottom: when the phone is in use, Android shows the
@@ -89,7 +126,7 @@ public final class RingActivity extends Activity {
         root.addView(clock, new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
 
-        setContentView(root);
+        setContentView(frame);
     }
 
     @Override

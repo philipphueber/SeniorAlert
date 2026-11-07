@@ -1,17 +1,38 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Plain, high-contrast platform theme. Black on white, no action bar. -->
-    <style name="AppTheme" parent="android:Theme.Material.Light.NoActionBar">
-        <item name="android:windowBackground">@android:color/white</item>
-        <item name="android:colorAccent">#1B5E20</item>
-        <item name="android:colorPrimary">#1B5E20</item>
-        <item name="android:statusBarColor">#000000</item>
+    <!-- Calm, high-contrast platform theme: dark text on a warm off-white page, white
+         cards. The system bars take the page colour with dark icons, so the status bar
+         stays readable. fitsSystemWindows keeps content clear of the status and
+         gesture bars (Android 15 draws apps edge to edge). -->
+    <style name="AppTheme.Base" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:windowBackground">@color/page</item>
+        <item name="android:colorAccent">@color/on_green</item>
+        <item name="android:colorPrimary">@color/on_green</item>
+        <item name="android:statusBarColor">@color/page</item>
+        <item name="android:navigationBarColor">@color/page</item>
+        <item name="android:windowLightStatusBar">true</item>
+    </style>
+
+    <style name="AppTheme" parent="AppTheme.Base" />
+
+    <!-- The ringing screen: all red, light system-bar icons. -->
+    <style name="RingTheme" parent="android:Theme.Material.NoActionBar">
+        <item name="android:windowBackground">@color/stop_red</item>
+        <item name="android:statusBarColor">@color/stop_red</item>
+        <item name="android:navigationBarColor">@color/stop_red</item>
     </style>
 
     <!-- Colours shared by MainActivity and RingActivity. -->
-    <color name="on_green">#1B5E20</color>
-    <color name="off_grey">#757575</color>
-    <color name="stop_red">#B71C1C</color>
-    <color name="text_black">#000000</color>
-    <color name="warn_yellow">#FFF59D</color>
+    <color name="page">#F4F2ED</color>
+    <color name="card">#FFFFFF</color>
+    <color name="text_black">#1C1B19</color>
+    <color name="text_muted">#77736B</color>
+    <color name="on_green">#2E7D32</color>
+    <color name="off_bg">#E6E3DC</color>
+    <color name="off_text">#55524B</color>
+    <color name="stop_red">#C62828</color>
+    <color name="warn_yellow">#FFF1BF</color>
+    <color name="warn_border">#E3B400</color>
+    <color name="press_dark">#33000000</color>
+    <color name="press_light">#55FFFFFF</color>
 </resources>

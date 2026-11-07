@@ -9,9 +9,11 @@ import android.app.TimePickerDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.graphics.drawable.GradientDrawable;
+import android.graphics.drawable.RippleDrawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -73,12 +75,15 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
         store = new Store(this);
         ScrollView scroll = new ScrollView(this);
-        scroll.setBackgroundColor(Color.WHITE);
         scroll.setFillViewport(true);
+        // Keeps content clear of the status bar and the gesture bar; Android 15 draws
+        // every app edge to edge, so without this the last button sits under the bar.
+        scroll.setFitsSystemWindows(true);
+        scroll.setClipToPadding(false);
         root = new LinearLayout(this);
         root.setOrientation(LinearLayout.VERTICAL);
-        int p = dp(16);
-        root.setPadding(p, p, p, p);
+        int p = dp(20);
+        root.setPadding(p, dp(12), p, dp(28));
         scroll.addView(root);
         setContentView(scroll);
     }
@@ -121,21 +126,30 @@ public class MainActivity extends Activity {
 
         shownRinging = RingService.isRinging();
         if (shownRinging) {
-            Button stop = button(getString(R.string.ringing_banner) + "\n"
-                    + getString(R.string.turn_off), R.color.stop_red, 36, 140);
+            Button stop = filled(getString(R.string.ringing_banner) + "\n"
+                    + getString(R.string.turn_off), R.color.stop_red, 34, 140);
             stop.setOnClickListener(v -> { RingService.stop(this); rebuild(); });
             root.addView(stop, spaced());
         }
 
         addWarnings(locked);
 
-        TextView title = text(getString(R.string.title_alarms), 34);
+        TextView title = text(getString(R.string.title_alarms), 36);
         title.setTypeface(Typeface.DEFAULT_BOLD);
-        root.addView(title, spaced());
+        LinearLayout.LayoutParams tlp = spaced();
+        tlp.topMargin = dp(20);
+        tlp.bottomMargin = dp(4);
+        root.addView(title, tlp);
 
         List<Alarm> alarms = store.alarms();
         shownAlarms = AlarmCodec.encode(alarms);
-        if (alarms.isEmpty()) root.addView(text(getString(R.string.no_alarms), 24), spaced());
+        if (alarms.isEmpty()) {
+            TextView empty = text(getString(R.string.no_alarms), 24);
+            empty.setTextColor(getColor(R.color.text_muted));
+            empty.setGravity(Gravity.CENTER);
+            empty.setPadding(0, dp(40), 0, dp(40));
+            root.addView(empty, spaced());
+        }
         for (Alarm a : alarms) addRow(a, locked);
 
         if (locked) {
@@ -143,42 +157,52 @@ public class MainActivity extends Activity {
             Button unlock = new Button(this);
             unlock.setText(R.string.unlock);
             unlock.setAllCaps(false);
-            unlock.setBackgroundColor(Color.TRANSPARENT);
-            unlock.setTextColor(getColor(R.color.off_grey));
+            unlock.setBackground(ripple(R.color.press_dark, Color.TRANSPARENT, 0, 0));
+            unlock.setStateListAnimator(null);
+            unlock.setTextColor(getColor(R.color.text_muted));
             unlock.setTextSize(TypedValue.COMPLEX_UNIT_SP, 16);
+            int ph = dp(24);
+            unlock.setPadding(ph, 0, ph, 0);
             LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
                     LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-            lp.topMargin = dp(48);
+            lp.topMargin = dp(40);
             lp.gravity = Gravity.CENTER_HORIZONTAL;
             unlock.setOnClickListener(v -> showUnlock());
             root.addView(unlock, lp);
         } else {
-            Button add = button(getString(R.string.add_alarm), R.color.on_green, 28, 80);
+            Button add = filled(getString(R.string.add_alarm), R.color.on_green, 26, 80);
             add.setOnClickListener(v -> pickTime(12, 0, (h, m) -> Scheduler.schedule(this, store.add(h, m))));
-            root.addView(add, spaced());
-            Button lock = button(getString(R.string.lock), R.color.text_black, 24, 64);
+            LinearLayout.LayoutParams alp = spaced();
+            alp.topMargin = dp(24);
+            root.addView(add, alp);
+            Button lock = outlined(getString(R.string.lock), R.color.text_black, 22, 64);
             lock.setOnClickListener(v -> showLock());
             root.addView(lock, spaced());
         }
     }
 
     private void addRow(Alarm a, boolean locked) {
-        LinearLayout row = new LinearLayout(this);
-        row.setOrientation(LinearLayout.VERTICAL);
-        int p = dp(16);
-        row.setPadding(p, p, p, p);
-        GradientDrawable border = new GradientDrawable();
-        border.setStroke(dp(2), getColor(R.color.off_grey));
-        border.setCornerRadius(dp(12));
-        row.setBackground(border);
+        LinearLayout card = new LinearLayout(this);
+        card.setOrientation(LinearLayout.VERTICAL);
+        int p = dp(20);
+        card.setPadding(p, dp(16), dp(16), dp(16));
+        GradientDrawable bg = new GradientDrawable();
+        bg.setColor(getColor(R.color.card));
+        bg.setCornerRadius(dp(24));
+        card.setBackground(bg);
+        card.setElevation(dp(2)); // a soft shadow lifts the card off the page
 
         LinearLayout top = new LinearLayout(this);
         top.setGravity(Gravity.CENTER_VERTICAL);
-        TextView time = text(format(a), 56);
+        TextView time = text(format(a), 58);
+        // OFF alarms fade back, so the ones that will ring stand out at a glance.
+        time.setTextColor(getColor(a.enabled ? R.color.text_black : R.color.text_muted));
         top.addView(time, new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1));
-        Button toggle = button(getString(a.enabled ? R.string.state_on : R.string.state_off),
-                a.enabled ? R.color.on_green : R.color.off_grey, 28, 72);
-        toggle.setMinWidth(dp(120));
+        Button toggle = a.enabled
+                ? filled(getString(R.string.state_on), R.color.on_green, 26, 72)
+                : tinted(getString(R.string.state_off), R.color.off_bg, R.color.off_text, 26, 72);
+        toggle.setMinWidth(dp(128));
+        toggle.setMinimumWidth(dp(128));
         toggle.setOnClickListener(v -> {
             Alarm changed = a.withEnabled(!a.enabled);
             store.update(changed);
@@ -186,21 +210,33 @@ public class MainActivity extends Activity {
             rebuild();
         });
         top.addView(toggle);
-        row.addView(top);
+        card.addView(top);
 
         if (!locked) {
-            Button change = button(getString(R.string.change_time), R.color.text_black, 22, 64);
+            // Secondary actions: outlined and side by side, so they don't compete with
+            // ON/OFF or look like the red Turn off.
+            LinearLayout actions = new LinearLayout(this);
+            Button change = outlined(getString(R.string.change_time), R.color.text_black, 19, 56);
             change.setOnClickListener(v -> pickTime(a.hour, a.minute, (h, m) -> {
                 Alarm changed = a.withTime(h, m).withEnabled(true); // picking a time means "ring then"
                 store.update(changed);
                 Scheduler.apply(this, changed);
             }));
-            row.addView(change, spaced());
-            Button delete = button(getString(R.string.delete), R.color.stop_red, 22, 64);
+            Button delete = outlined(getString(R.string.delete), R.color.stop_red, 19, 56);
             delete.setOnClickListener(v -> confirmDelete(a));
-            row.addView(delete, spaced());
+            LinearLayout.LayoutParams left = new LinearLayout.LayoutParams(0,
+                    LinearLayout.LayoutParams.WRAP_CONTENT, 1);
+            left.rightMargin = dp(6);
+            LinearLayout.LayoutParams right = new LinearLayout.LayoutParams(0,
+                    LinearLayout.LayoutParams.WRAP_CONTENT, 1);
+            right.leftMargin = dp(6);
+            actions.addView(change, left);
+            actions.addView(delete, right);
+            LinearLayout.LayoutParams alp = spaced();
+            alp.topMargin = dp(12);
+            card.addView(actions, alp);
         }
-        root.addView(row, spaced());
+        root.addView(card, spaced());
     }
 
     // ---------------------------------------------------------------- warnings
@@ -238,14 +274,12 @@ public class MainActivity extends Activity {
     }
 
     private void warning(int textRes, View.OnClickListener onClick) {
-        TextView w = text(getString(textRes), 20);
-        int p = dp(16);
+        TextView w = text("⚠  " + getString(textRes), 19);
+        int p = dp(18);
         w.setPadding(p, p, p, p);
         w.setMinHeight(dp(64));
-        GradientDrawable bg = new GradientDrawable();
-        bg.setColor(getColor(R.color.warn_yellow));
-        bg.setCornerRadius(dp(12));
-        w.setBackground(bg);
+        w.setBackground(ripple(R.color.press_dark, getColor(R.color.warn_yellow),
+                getColor(R.color.warn_border), 20));
         w.setOnClickListener(onClick);
         root.addView(w, spaced());
     }
@@ -432,21 +466,49 @@ public class MainActivity extends Activity {
         return t;
     }
 
-    private Button button(String label, int colorRes, int sp, int minHeightDp) {
+    /** Solid button with white text: the main actions (ON, Add alarm, Turn off). */
+    private Button filled(String label, int bgRes, int sp, int minHeightDp) {
+        return pill(label, getColor(bgRes), Color.WHITE, 0, R.color.press_light, sp, minHeightDp);
+    }
+
+    /** Soft-coloured button with dark text: the resting state (OFF). */
+    private Button tinted(String label, int bgRes, int fgRes, int sp, int minHeightDp) {
+        return pill(label, getColor(bgRes), getColor(fgRes), 0, R.color.press_dark, sp, minHeightDp);
+    }
+
+    /** White button with a coloured outline: secondary actions (Change time, Delete, Lock). */
+    private Button outlined(String label, int fgRes, int sp, int minHeightDp) {
+        int fg = getColor(fgRes);
+        return pill(label, getColor(R.color.card), fg, fg, R.color.press_dark, sp, minHeightDp);
+    }
+
+    private Button pill(String label, int bg, int fg, int stroke, int pressRes, int sp, int minHeightDp) {
         Button b = new Button(this);
         b.setText(label);
         b.setAllCaps(false);
-        b.setTextColor(Color.WHITE);
+        b.setTextColor(fg);
         b.setTypeface(Typeface.DEFAULT_BOLD);
         b.setTextSize(TypedValue.COMPLEX_UNIT_SP, sp);
         b.setMinHeight(dp(minHeightDp));
         b.setMinimumHeight(dp(minHeightDp));
-        b.setStateListAnimator(null); // no elevation shadow: flat and plain
-        GradientDrawable bg = new GradientDrawable();
-        bg.setColor(getColor(colorRes));
-        bg.setCornerRadius(dp(12));
-        b.setBackground(bg);
+        b.setStateListAnimator(null); // flat; the ripple alone shows the press
+        b.setBackground(ripple(pressRes, bg, stroke, minHeightDp / 2));
         return b;
+    }
+
+    /**
+     * Rounded background with the platform's ripple on press, so every tap gives a
+     * visible "yes, that worked". stroke 0 = no outline.
+     */
+    private RippleDrawable ripple(int pressRes, int fill, int stroke, int radiusDp) {
+        GradientDrawable shape = new GradientDrawable();
+        shape.setColor(fill);
+        shape.setCornerRadius(dp(radiusDp));
+        if (stroke != 0) shape.setStroke(dp(2), stroke);
+        GradientDrawable mask = new GradientDrawable();
+        mask.setColor(Color.WHITE);
+        mask.setCornerRadius(dp(radiusDp));
+        return new RippleDrawable(ColorStateList.valueOf(getColor(pressRes)), shape, mask);
     }
 
     /** Full width with a gap above, so big targets never touch each other. */

@@ -47,6 +47,7 @@
             android:exported="false"
             android:launchMode="singleInstance"
             android:showWhenLocked="true"
+            android:theme="@style/RingTheme"
             android:taskAffinity=""
             android:turnScreenOn="true" />
 

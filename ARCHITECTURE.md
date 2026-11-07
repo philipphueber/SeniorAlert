@@ -45,6 +45,19 @@ channel or full-screen intents are turned off, the sound still plays but only
 the banner (after unlocking the phone) and the time limit remain. That is why
 those settings are warned about even when the app is locked.
 
+## Look
+
+Plain platform views built in code, with no layout XML and no UI library. Colours live in
+`res/values/styles.xml`. `AppTheme` is a warm off-white page with dark system-bar
+icons (`values-v27` adds dark navigation-bar icons). `RingTheme` is all red.
+Both screens use `fitsSystemWindows`, because Android 15 draws apps edge to edge.
+Buttons are rounded `GradientDrawable`s inside the platform `RippleDrawable`,
+so every tap shows feedback. Filled means a main action, tinted means OFF, and
+outlined means a secondary action. The ring screen's button is a clickable
+`FrameLayout` that centres the Material alarm icon (`ic_alarm.xml`, a vector)
+with the label. The clock sits below the button, because the system's heads-up
+notification covers the top of the screen.
+
 ## Storage
 
 One SharedPreferences file `senioralert` opened through
