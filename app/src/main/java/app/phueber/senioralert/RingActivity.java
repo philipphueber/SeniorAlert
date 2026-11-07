@@ -69,8 +69,6 @@ public final class RingActivity extends Activity {
         clock.setTextSize(TypedValue.COMPLEX_UNIT_SP, 72);
         clock.setTypeface(Typeface.DEFAULT_BOLD);
         clock.setGravity(Gravity.CENTER);
-        root.addView(clock, new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
 
         Button off = new Button(this);
         off.setText(R.string.turn_off);
@@ -82,8 +80,14 @@ public final class RingActivity extends Activity {
         off.setOnClickListener(v -> turnOff());
         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT, 0, 1f); // fills the rest of the screen
-        lp.topMargin = pad;
+        lp.bottomMargin = pad;
         root.addView(off, lp);
+
+        // The clock goes at the bottom: when the phone is in use, Android shows the
+        // alarm notification as a heads-up over the top of the screen, which would
+        // hide a clock placed there. Over the button it is harmless (still huge).
+        root.addView(clock, new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
 
         setContentView(root);
     }
