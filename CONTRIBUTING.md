@@ -69,4 +69,6 @@ debug builds and tests are unaffected.
    `$ANDROID_HOME/build-tools/35.0.0/apksigner verify --print-certs <apk>`.
    The SHA-256 must be
    `A8:AD:AB:92:E2:7F:5F:9C:CD:1D:1A:18:E1:DD:CE:D6:4E:EA:F3:53:7D:40:36:95:98:99:56:15:D8:24:A9:28`.
-5. Tag `v<version>` and attach the APK to a GitHub release.
+5. Tag `v<version>` and attach the APK to a GitHub release, renamed to
+   `SeniorAlert-<version>.apk`. Versions are 0.0.x for now and are published as
+   pre-releases.
