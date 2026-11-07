@@ -13,7 +13,7 @@ English and German. The app follows the phone's language.
 
 ## What it does
 
-- **Several alarms.** Each one is just a time and a big ON/OFF button.
+- **Several alarms.** Each one is just a time and a big OFF | ON switch.
 - **Rings once.** An alarm that is ON rings once, at its next time, then
   switches itself OFF. To make it ring again, switch it ON again.
 - **Lock with a PIN.** When locked, alarms can only be switched ON and OFF.
@@ -27,15 +27,17 @@ internet, no ads.
 ## What you see
 
 <p>
-  <img src="docs/screenshots/main-locked.png" width="30%" alt="Main screen, locked: alarm times with big ON and OFF buttons">
+  <img src="docs/screenshots/main-locked.png" width="30%" alt="Main screen, locked: alarm times, each with a big OFF | ON switch">
   <img src="docs/screenshots/main-unlocked.png" width="30%" alt="Main screen, unlocked: each alarm also has Change time and Delete">
   <img src="docs/screenshots/ringing.png" width="30%" alt="Ringing over the lock screen: one huge red Turn off button and the time">
 </p>
 
-**Main screen.** A list of alarm times. Next to each time, a big green **ON**
-or grey **OFF** button. Unlocked, each alarm also has **Change time** and
+**Main screen.** A list of alarm times. Under each time is a big switch with
+two halves, **OFF** and **ON**, each with a bell (crossed out for OFF). The
+current choice is filled in: green for ON, dark grey for OFF. To change it,
+press the word you want. Unlocked, each alarm also has **Change time** and
 **Delete**, and at the bottom there are **Add alarm** and **Lock**. Locked,
-only the times and the ON/OFF buttons are left, plus a small **Hold to unlock**
+only the times and the OFF | ON switches are left, plus a small **Hold to unlock**
 at the very bottom. It only reacts when held down, so it cannot be opened by a
 stray tap. The PIN prompt closes by itself if nothing is typed for 10 seconds.
 A big **← Back** button stays at the bottom of the screen and goes to the phone's
@@ -79,7 +81,7 @@ anything that still needs to be allowed. Tap each box and allow it:
 
 Then:
 
-1. Add the alarms and check that they show **ON**.
+1. Add the alarms and check that **ON** is filled in green.
 2. Test it: add an alarm for one or two minutes from now and wait for it.
 3. Make sure the phone's alarm volume is up.
 4. Tap **Lock** and choose a PIN (4 to 8 digits). Write the PIN down somewhere
@@ -117,7 +119,7 @@ Deutsch und Englisch. Die App folgt der Sprache des Telefons.
 
 ## Was die App kann
 
-- **Mehrere Wecker.** Jeder ist nur eine Uhrzeit und ein großer AN/AUS-Knopf.
+- **Mehrere Wecker.** Jeder ist nur eine Uhrzeit und ein großer AUS | AN-Schalter.
 - **Klingelt einmal.** Ein eingeschalteter Wecker klingelt einmal zur nächsten
   passenden Uhrzeit und schaltet sich dann selbst AUS. Damit er wieder
   klingelt, schaltet man ihn wieder AN.
@@ -135,10 +137,12 @@ Einstellungen, kein Konto, kein Internet, keine Werbung.
 Bilder siehe [oben](#what-you-see) (englische Ansicht; auf einem deutschen
 Telefon steht dort AN, AUS, Ausschalten).
 
-**Hauptseite.** Eine Liste mit Weckzeiten. Neben jeder Zeit ein großer grüner
-Knopf **AN** oder grauer Knopf **AUS**. Entsperrt hat jeder Wecker zusätzlich
+**Hauptseite.** Eine Liste mit Weckzeiten. Unter jeder Zeit ein großer
+Schalter mit zwei Hälften, **AUS** und **AN**, jeweils mit einer Glocke
+(durchgestrichen bei AUS). Die aktuelle Wahl ist ausgefüllt: grün für AN,
+dunkelgrau für AUS. Zum Ändern drückt man das Wort, das man möchte. Entsperrt hat jeder Wecker zusätzlich
 **Zeit ändern** und **Löschen**, unten stehen **Wecker hinzufügen** und
-**Sperren**. Gesperrt bleiben nur die Zeiten und die AN/AUS-Knöpfe, ganz unten
+**Sperren**. Gesperrt bleiben nur die Zeiten und die AUS | AN-Schalter, ganz unten
 ein kleines **Zum Entsperren gedrückt halten**. Es reagiert nur, wenn man es
 gedrückt hält, also nicht auf versehentliches Antippen. Die PIN-Abfrage
 schließt sich von selbst, wenn 10 Sekunden lang nichts eingegeben wird.
@@ -186,7 +190,7 @@ erlauben:
 
 Danach:
 
-1. Die Wecker anlegen und prüfen, dass sie **AN** zeigen.
+1. Die Wecker anlegen und prüfen, dass **AN** grün ausgefüllt ist.
 2. Testen: einen Wecker für in ein, zwei Minuten anlegen und abwarten.
 3. Prüfen, dass die Wecker-Lautstärke des Telefons hoch ist.
 4. **Sperren** antippen und eine PIN wählen (4 bis 8 Ziffern). Die PIN an

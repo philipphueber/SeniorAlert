@@ -20,7 +20,7 @@ Plain Java, platform APIs only. Keep this file current with every change.
 | `RingActivity` | Ringing screen over the lock screen: one big Turn-off button, volume keys also stop. |
 | `OneLineText` | A `TextView` that stays on one line and shrinks its text only as far as needed to fit its width. Used for both clock times, so a very large phone font never wraps a time ("10:30" / "AM"). The platform autosize needs a fixed height; this needs only the width. |
 | `StopReceiver` | Stops ringing: target of the notification action and of the backup AlarmManager stop. |
-| `MainActivity` | Alarm list, add/edit/toggle/delete, PIN set/lock/unlock (Unlock needs a long press; the PIN prompt closes after 10 s without typing), setup warnings, banner with stop while ringing, and a Back button (left arrow, `ic_arrow_back.xml`) pinned below the scrolling list that opens the home screen (`CATEGORY_HOME`), because many seniors do not know the back gesture. Opens `RingActivity` itself when ringing starts or it is opened while ringing (the system heads-up would otherwise cover the banner). Warnings that affect whether the ring screen can appear (notifications, ringing channel importance, full-screen) also show when locked. |
+| `MainActivity` | Alarm list, add/edit/delete, an OFF | ON switch per alarm (two halves with bells, `ic_bell.xml`/`ic_bell_off.xml`; the active half is filled and `selected`, pressing the active half does nothing), PIN set/lock/unlock (Unlock needs a long press; the PIN prompt closes after 10 s without typing), setup warnings, banner with stop while ringing, and a Back button (left arrow, `ic_arrow_back.xml`) pinned below the scrolling list that opens the home screen (`CATEGORY_HOME`), because many seniors do not know the back gesture. Opens `RingActivity` itself when ringing starts or it is opened while ringing (the system heads-up would otherwise cover the banner). Warnings that affect whether the ring screen can appear (notifications, ringing channel importance, full-screen) also show when locked. |
 
 Pure classes have JVM tests in `app/src/test`; Android-facing classes have none.
 
@@ -53,8 +53,11 @@ Plain platform views built in code, with no layout XML and no UI library. Colour
 icons (`values-v27` adds dark navigation-bar icons). `RingTheme` is all red.
 Both screens use `fitsSystemWindows`, because Android 15 draws apps edge to edge.
 Buttons are rounded `GradientDrawable`s inside the platform `RippleDrawable`,
-so every tap shows feedback. Filled means a main action, tinted means OFF, and
-outlined means a secondary action. The ring screen's button is a clickable
+so every tap shows feedback. Filled means a main action and outlined means a
+secondary action. ON/OFF is a two-part switch rather than one toggle button:
+a single button labelled with the state read as an action (pressing "OFF"
+turned the alarm on), while with both halves visible you press the word you
+want. The ring screen's button is a clickable
 `FrameLayout` that centres the Material alarm icon (`ic_alarm.xml`, a vector)
 with the label. The clock sits below the button, because the system's heads-up
 notification covers the top of the screen. Times use `OneLineText`, so the

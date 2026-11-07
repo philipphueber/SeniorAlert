@@ -252,28 +252,26 @@ public class MainActivity extends Activity {
         card.setBackground(bg);
         card.setElevation(dp(2)); // a soft shadow lifts the card off the page
 
-        LinearLayout top = new LinearLayout(this);
-        top.setGravity(Gravity.CENTER_VERTICAL);
         TextView time = new OneLineText(this, 58);
         time.setText(format(a));
         // OFF alarms fade back, so the ones that will ring stand out at a glance.
         time.setTextColor(getColor(a.enabled ? R.color.text_black : R.color.text_muted));
-        LinearLayout.LayoutParams timeLp = new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1);
-        timeLp.setMarginEnd(dp(12)); // a shrunk time must not touch ON/OFF
-        top.addView(time, timeLp);
-        Button toggle = a.enabled
-                ? filled(getString(R.string.state_on), R.color.on_green, 26, 72)
-                : tinted(getString(R.string.state_off), R.color.off_bg, R.color.off_text, 26, 72);
-        toggle.setMinWidth(dp(128));
-        toggle.setMinimumWidth(dp(128));
-        toggle.setOnClickListener(v -> {
-            Alarm changed = a.withEnabled(!a.enabled);
-            store.update(changed);
-            Scheduler.apply(this, changed);
-            rebuild();
-        });
-        top.addView(toggle);
-        card.addView(top);
+        card.addView(time);
+
+        // Two-part switch, OFF | ON: both choices are always visible and you press the
+        // one you want. A single button showing the state read as an action ("OFF"
+        // pressed, alarm went ON).
+        LinearLayout sw = new LinearLayout(this);
+        sw.setPadding(dp(4), dp(4), dp(4), dp(4));
+        GradientDrawable track = new GradientDrawable();
+        track.setColor(getColor(R.color.off_bg));
+        track.setCornerRadius(dp(40));
+        sw.setBackground(track);
+        sw.addView(switchHalf(a, false), new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.MATCH_PARENT, 1));
+        sw.addView(switchHalf(a, true), new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.MATCH_PARENT, 1));
+        LinearLayout.LayoutParams swlp = spaced();
+        swlp.topMargin = dp(8);
+        card.addView(sw, swlp);
 
         if (!locked) {
             // Secondary actions: outlined and side by side, so they don't compete with
@@ -300,6 +298,49 @@ public class MainActivity extends Activity {
             card.addView(actions, alp);
         }
         root.addView(card, spaced());
+    }
+
+    /**
+     * One half of the OFF | ON switch. The half matching the alarm's state is filled.
+     * A bell (crossed out for OFF) backs up the word: the sign phones already use
+     * for "silent", and a second cue for anyone who reads the colour or word poorly.
+     */
+    private View switchHalf(Alarm a, boolean on) {
+        boolean active = a.enabled == on;
+        int fg = active ? Color.WHITE : getColor(R.color.off_text);
+        LinearLayout half = new LinearLayout(this);
+        half.setGravity(Gravity.CENTER);
+        half.setMinimumHeight(dp(64));
+        half.setPadding(dp(8), dp(6), dp(8), dp(6));
+        int fill = !active ? Color.TRANSPARENT
+                : getColor(on ? R.color.on_green : R.color.off_text);
+        half.setBackground(ripple(active ? R.color.press_light : R.color.press_dark, fill, 0, 36));
+        half.setSelected(active);
+        String word = getString(on ? R.string.state_on : R.string.state_off);
+        half.setContentDescription(word);
+        half.setClickable(true);
+        half.setOnClickListener(v -> {
+            if (a.enabled == on) return; // already so: nothing to do
+            Alarm changed = a.withEnabled(on);
+            store.update(changed);
+            Scheduler.apply(this, changed);
+            rebuild();
+        });
+
+        TextView label = text(word, 26);
+        label.setTypeface(Typeface.DEFAULT_BOLD);
+        label.setTextColor(fg);
+        label.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
+        ImageView bell = new ImageView(this);
+        bell.setImageResource(on ? R.drawable.ic_bell : R.drawable.ic_bell_off);
+        bell.setImageTintList(ColorStateList.valueOf(fg));
+        bell.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
+        int size = Math.round(label.getTextSize() * 1.15f); // grows with the font setting
+        LinearLayout.LayoutParams blp = new LinearLayout.LayoutParams(size, size);
+        blp.setMarginEnd(dp(8));
+        half.addView(bell, blp);
+        half.addView(label);
+        return half;
     }
 
     // ---------------------------------------------------------------- warnings
@@ -545,14 +586,9 @@ public class MainActivity extends Activity {
         return t;
     }
 
-    /** Solid button with white text: the main actions (ON, Add alarm, Turn off). */
+    /** Solid button with white text: the main actions (Add alarm, Turn off). */
     private Button filled(String label, int bgRes, int sp, int minHeightDp) {
         return pill(label, getColor(bgRes), Color.WHITE, 0, R.color.press_light, sp, minHeightDp);
-    }
-
-    /** Soft-coloured button with dark text: the resting state (OFF). */
-    private Button tinted(String label, int bgRes, int fgRes, int sp, int minHeightDp) {
-        return pill(label, getColor(bgRes), getColor(fgRes), 0, R.color.press_dark, sp, minHeightDp);
     }
 
     /** White button with a coloured outline: secondary actions (Change time, Delete, Lock). */

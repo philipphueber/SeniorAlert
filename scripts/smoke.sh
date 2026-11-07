@@ -100,8 +100,8 @@ sleep 3
 tap_text "Turn off" || fail "Turn off not found"
 wait_service down 5 || { SH dumpsys activity services "$PKG" | head -n 4; fail "RingService still running after one Turn off tap"; }
 pass "RingService stopped after one Turn off tap"
-# One-shot: the alarm must now read OFF.
+# One-shot: the alarm's switch must now have its OFF half selected.
 sleep 2; dump_ui
-find_node text "OFF" >/dev/null && pass "alarm switched itself OFF" || fail "alarm not OFF after ringing"
+grep -q 'content-desc="OFF"[^>]*selected="true"' "$XML" && pass "alarm switched itself OFF" || fail "alarm not OFF after ringing"
 cleanup
 echo "ALL PASS"
