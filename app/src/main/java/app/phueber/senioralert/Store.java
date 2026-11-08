@@ -24,9 +24,11 @@ public final class Store {
     private static final String K_HASH = "pin_hash";
 
     private final SharedPreferences prefs;
+    private final Context app;
 
     public Store(Context context) {
-        Context dp = context.getApplicationContext().createDeviceProtectedStorageContext();
+        app = context.getApplicationContext();
+        Context dp = app.createDeviceProtectedStorageContext();
         prefs = dp.getSharedPreferences(FILE, Context.MODE_PRIVATE);
     }
 
@@ -68,7 +70,21 @@ public final class Store {
         prefs.edit().putString(K_ALARMS, AlarmCodec.encode(list)).commit();
     }
 
-    public synchronized boolean isLocked() {
+    /**
+     * Locked for editing: the helper locked SeniorLauncher's home screen, or
+     * (without the launcher) this app's own PIN lock is on.
+     */
+    public boolean isLocked() {
+        return isLockedByLauncher() || isOwnLocked();
+    }
+
+    /** The home screen is locked; it can only be unlocked there. */
+    public boolean isLockedByLauncher() {
+        return LauncherLock.locked(app);
+    }
+
+    /** This app's own PIN lock, used when SeniorLauncher is not installed. */
+    public synchronized boolean isOwnLocked() {
         return prefs.getBoolean(K_LOCKED, false);
     }
 

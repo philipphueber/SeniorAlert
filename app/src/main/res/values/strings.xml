@@ -41,4 +41,8 @@
     <string name="channel_alarm">Alarm</string>
     <string name="notif_ringing">Alarm</string>
     <string name="notif_tap">Tap to turn off</string>
+    <string name="unlock_on_home">Locked with the home screen</string>
+    <string name="unlock_on_home_message">This app is locked together with the home screen. To unlock, press and hold the padlock on the home screen.</string>
+    <string name="go_home">Go to the home screen</string>
+    <string name="lock_with_home">Locks together with the home screen: Settings → Lock there.</string>
 </resources>

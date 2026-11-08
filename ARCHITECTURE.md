@@ -12,7 +12,8 @@ Plain Java, platform APIs only. Keep this file current with every change.
 | `AlarmCodec` | List of alarms to/from one string `id:h:m:e;...`. Skips malformed entries, drops duplicate ids, sorts by time then id. Pure. |
 | `NextTrigger` | Next fire time for hour:minute in a given `TimeZone`, via `Calendar`, so 07:00 stays 07:00 across DST. Used when an alarm is switched ON: the next occurrence of its time; "now" (same minute) means tomorrow. Pure. |
 | `Pin` | PIN validation (4-8 ASCII digits), salted SHA-256 hash, constant-time compare. Pure. |
-| `Store` | All persistent state (alarms, next id, lock flag, PIN salt/hash) in device-protected SharedPreferences. |
+| `Store` | All persistent state (alarms, next id, lock flag, PIN salt/hash) in device-protected SharedPreferences. `isLocked()` is the launcher's lock or the own PIN lock. |
+| `LauncherLock` | Reads SeniorLauncher's read-only lock (`content://app.phueber.seniorlauncher.lock/state`). With the launcher installed, the home screen's lock is the lock: the Lock/PIN button gives way to a note, and "Locked with the home screen" explains that unlocking happens there. Without it, the PIN lock works as before. Only the alarm list reads it, never the ringing path. |
 | `Scheduler` | Arms/cancels one `AlarmManager.setAlarmClock` per enabled alarm (inexact `setAndAllowWhileIdle` only if exact alarms are denied). `rescheduleAll` re-arms everything from scratch (boot, time change); `ensureArmed` arms only what AlarmManager lost (app opened), so a pending, possibly late alarm is never pushed to tomorrow. |
 | `AlarmReceiver` | Receives a fired alarm: marks it OFF in `Store` first (alarms do not repeat), then starts `RingService`. If Android refuses the start, it puts the alarm back ON (armed for the next occurrence) so a missed ring never shows as OFF. |
 | `BootReceiver` | On boot, package replace, time or time-zone change and exact-alarm permission change: `Scheduler.rescheduleAll`. |

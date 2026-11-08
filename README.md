@@ -18,6 +18,9 @@ English and German. The app follows the phone's language.
   switches itself OFF. To make it ring again, switch it ON again.
 - **Lock with a PIN.** When locked, alarms can only be switched ON and OFF.
   Adding, changing or deleting needs the PIN.
+  With the SeniorLauncher home screen installed, there is one lock for the
+  whole phone instead: locking the home screen locks the alarms too, and they
+  unlock on the home screen.
 - **One button to stop.** No snooze, no swiping, no small buttons.
 - **Stops by itself after 2 minutes**, even if nobody presses anything.
 
@@ -125,6 +128,9 @@ Deutsch und Englisch. Die App folgt der Sprache des Telefons.
   klingelt, schaltet man ihn wieder AN.
 - **Sperre mit PIN.** Gesperrt kann man Wecker nur AN- und AUSschalten.
   Hinzufügen, Ändern und Löschen brauchen die PIN.
+  Ist die Startseite SeniorLauncher installiert, gibt es stattdessen eine Sperre
+  für das ganze Telefon: Wird die Startseite gesperrt, sind auch die Wecker
+  gesperrt, und entsperrt wird auf der Startseite.
 - **Ein Knopf zum Ausschalten.** Kein Schlummern, kein Wischen, keine kleinen
   Knöpfe.
 - **Hört nach 2 Minuten von selbst auf**, auch wenn niemand etwas drückt.

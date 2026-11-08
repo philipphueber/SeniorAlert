@@ -10,6 +10,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.res.ColorStateList;
+import android.database.ContentObserver;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.graphics.drawable.GradientDrawable;
@@ -153,15 +154,29 @@ public class MainActivity extends Activity {
         // missing, so a pending (possibly late, inexact) alarm keeps its time.
         Scheduler.ensureArmed(this);
         maybeAutoRequestNotifications();
+        try {
+            getContentResolver().registerContentObserver(LauncherLock.STATE, false, launcherLock);
+        } catch (RuntimeException ignored) {
+            // no launcher: our own lock only
+        }
         rebuild();
         // Opened (or returned to) while ringing: the ring screen goes on top.
         if (RingService.isRinging()) openRingScreen();
         handler.postDelayed(poll, 1000);
     }
 
+    /** The helper locked or unlocked the home screen while this list is open. */
+    private final ContentObserver launcherLock = new ContentObserver(handler) {
+        @Override public void onChange(boolean selfChange) {
+            dismissDialog();
+            rebuild();
+        }
+    };
+
     @Override
     protected void onPause() {
         handler.removeCallbacks(poll);
+        getContentResolver().unregisterContentObserver(launcherLock);
         super.onPause();
     }
 
@@ -213,7 +228,8 @@ public class MainActivity extends Activity {
         if (locked) {
             // Small and plain on purpose: it is for the caregiver, not the senior.
             Button unlock = new Button(this);
-            unlock.setText(R.string.unlock);
+            boolean byLauncher = store.isLockedByLauncher();
+            unlock.setText(byLauncher ? R.string.unlock_on_home : R.string.unlock);
             unlock.setAllCaps(false);
             unlock.setBackground(ripple(R.color.press_dark, Color.TRANSPARENT, 0, 0));
             unlock.setStateListAnimator(null);
@@ -227,7 +243,12 @@ public class MainActivity extends Activity {
             lp.gravity = Gravity.CENTER_HORIZONTAL;
             // Long press only: a senior tapping around cannot open the PIN prompt by
             // accident; the helper, told by the label, holds it.
-            unlock.setOnLongClickListener(v -> { showUnlock(); return true; });
+            // Locked with the home screen: only the home screen unlocks (this app
+            // can see the launcher's lock but not lift it), so explain that.
+            unlock.setOnLongClickListener(v -> {
+                if (byLauncher) showUnlockOnHome(); else showUnlock();
+                return true;
+            });
             root.addView(unlock, lp);
         } else {
             Button add = filled(getString(R.string.add_alarm), R.color.on_green, 26, 80);
@@ -235,9 +256,17 @@ public class MainActivity extends Activity {
             LinearLayout.LayoutParams alp = spaced();
             alp.topMargin = dp(24);
             root.addView(add, alp);
-            Button lock = outlined(getString(R.string.lock), R.color.text_black, 22, 64);
-            lock.setOnClickListener(v -> showLock());
-            root.addView(lock, spaced());
+            if (LauncherLock.present(this)) {
+                // One lock for the whole phone: set on the home screen, not here.
+                TextView note = text(getString(R.string.lock_with_home), 18);
+                note.setTextColor(getColor(R.color.text_muted));
+                note.setGravity(Gravity.CENTER);
+                root.addView(note, spaced());
+            } else {
+                Button lock = outlined(getString(R.string.lock), R.color.text_black, 22, 64);
+                lock.setOnClickListener(v -> showLock());
+                root.addView(lock, spaced());
+            }
         }
     }
 
@@ -457,6 +486,16 @@ public class MainActivity extends Activity {
                     Scheduler.cancel(this, a.id);
                     rebuild();
                 })
+                .setNegativeButton(R.string.cancel, null)
+                .show();
+    }
+
+    private void showUnlockOnHome() {
+        dismissDialog();
+        dialog = new AlertDialog.Builder(this)
+                .setTitle(R.string.unlock_title)
+                .setMessage(R.string.unlock_on_home_message)
+                .setPositiveButton(R.string.go_home, (x, y) -> goHome())
                 .setNegativeButton(R.string.cancel, null)
                 .show();
     }
