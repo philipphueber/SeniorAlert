@@ -78,7 +78,7 @@ public final class Store {
         return isLockedByLauncher() || isOwnLocked();
     }
 
-    /** The home screen is locked; it can only be unlocked there. */
+    /** The home screen is locked; its PIN unlocks it, here or there. */
     public boolean isLockedByLauncher() {
         return LauncherLock.locked(app);
     }
@@ -95,12 +95,19 @@ public final class Store {
                 .putBoolean(K_LOCKED, true).commit();
     }
 
-    /** Unlocks if the PIN is right; returns whether it was. */
-    public synchronized boolean unlock(String pin) {
-        if (!Pin.matches(prefs.getString(K_SALT, null), prefs.getString(K_HASH, null), pin)) {
-            return false;
+    /**
+     * Lifts every lock that holds this app, the home screen's and its own, if
+     * the PIN is right; returns whether nothing is locked any more.
+     */
+    public boolean unlock(String pin) {
+        if (isLockedByLauncher() && !LauncherLock.unlock(app, pin)) return false;
+        synchronized (this) {
+            if (!prefs.getBoolean(K_LOCKED, false)) return true;
+            if (!Pin.matches(prefs.getString(K_SALT, null), prefs.getString(K_HASH, null), pin)) {
+                return false;
+            }
+            prefs.edit().putBoolean(K_LOCKED, false).remove(K_SALT).remove(K_HASH).commit();
+            return true;
         }
-        prefs.edit().putBoolean(K_LOCKED, false).remove(K_SALT).remove(K_HASH).commit();
-        return true;
     }
 }

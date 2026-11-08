@@ -228,8 +228,7 @@ public class MainActivity extends Activity {
         if (locked) {
             // Small and plain on purpose: it is for the caregiver, not the senior.
             Button unlock = new Button(this);
-            boolean byLauncher = store.isLockedByLauncher();
-            unlock.setText(byLauncher ? R.string.unlock_on_home : R.string.unlock);
+            unlock.setText(R.string.unlock);
             unlock.setAllCaps(false);
             unlock.setBackground(ripple(R.color.press_dark, Color.TRANSPARENT, 0, 0));
             unlock.setStateListAnimator(null);
@@ -243,10 +242,10 @@ public class MainActivity extends Activity {
             lp.gravity = Gravity.CENTER_HORIZONTAL;
             // Long press only: a senior tapping around cannot open the PIN prompt by
             // accident; the helper, told by the label, holds it.
-            // Locked with the home screen: only the home screen unlocks (this app
-            // can see the launcher's lock but not lift it), so explain that.
+            // Locked with the home screen or on its own: the same PIN prompt;
+            // Store.unlock lifts the home screen's lock with its PIN too.
             unlock.setOnLongClickListener(v -> {
-                if (byLauncher) showUnlockOnHome(); else showUnlock();
+                showUnlock();
                 return true;
             });
             root.addView(unlock, lp);
@@ -486,16 +485,6 @@ public class MainActivity extends Activity {
                     Scheduler.cancel(this, a.id);
                     rebuild();
                 })
-                .setNegativeButton(R.string.cancel, null)
-                .show();
-    }
-
-    private void showUnlockOnHome() {
-        dismissDialog();
-        dialog = new AlertDialog.Builder(this)
-                .setTitle(R.string.unlock_title)
-                .setMessage(R.string.unlock_on_home_message)
-                .setPositiveButton(R.string.go_home, (x, y) -> goHome())
                 .setNegativeButton(R.string.cancel, null)
                 .show();
     }
